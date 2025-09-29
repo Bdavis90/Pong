@@ -1,8 +1,17 @@
-#include <iostream>
+#include "Game.h"
 
 int main()
 {
-	std::cout << "Hello" << std::endl;
+	Game game;
 
-	std::cin.get();
+	bool success = game.Initilize();
+
+	if (success)
+	{
+		game.RunLoop();
+	}
+
+	game.Shutdown();
+
+	return 0;
 }
