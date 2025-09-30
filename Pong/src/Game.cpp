@@ -4,7 +4,7 @@
 const int thickness = 15;
 const float paddleH = 100.f;
 
-Game::Game() : mWindow(nullptr), mRenderer(nullptr), mIsRunning(true), mPaddlePos()
+Game::Game() : mWindow(nullptr), mRenderer(nullptr), mIsRunning(true), mTicksCount(0), mPaddleDir(0)
 {
 }
 
@@ -38,6 +38,9 @@ bool Game::Initilize()
 	mPaddlePos.y = 768.f / 2.f;
 	mBallPos.x = 1024.f / 2.f;
 	mBallPos.y = 768.f / 2.f;
+
+	mBallVel.x = -200.f;
+	mBallVel.y = 235.f;
 
 	return true;
 }
@@ -78,10 +81,81 @@ void Game::ProcessInput()
 	{
 		mIsRunning = false;
 	}
+
+	mPaddleDir = 0;
+
+	if (state[SDL_SCANCODE_W])
+	{
+		mPaddleDir -= 1;
+	}
+
+	if (state[SDL_SCANCODE_S])
+	{
+		mPaddleDir += 1;
+	}
 }
 
 void Game::UpdateGame()
 {
+	// Frame Limiter 60fps
+	const Uint32 timeout = mTicksCount + 16;
+	Uint32 limiter = (timeout - SDL_GetTicks());
+
+	while (limiter <= 0)
+	{
+		//currTime = SDL_GetTicks();
+	}
+
+	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.f;
+	mTicksCount = SDL_GetTicks();
+
+	if (deltaTime > 0.05f)
+	{
+		deltaTime = 0.05f;
+	}
+
+	if (mPaddleDir != 0)
+	{
+		mPaddlePos.y += mPaddleDir * 300.f * deltaTime;
+
+		if (mPaddlePos.y < (paddleH / 2.f + thickness))
+		{
+			mPaddlePos.y = paddleH / 2.f + thickness;
+		}
+		else if (mPaddlePos.y > (768.f - paddleH / 2.f - thickness))
+		{
+			mPaddlePos.y = (768.f - paddleH / 2.f - thickness);
+		}
+	}
+
+	mBallPos.x += mBallVel.x * deltaTime;
+	mBallPos.y += mBallVel.y * deltaTime;
+
+	float diff = mPaddlePos.y - mBallPos.y;
+	diff = (diff > 0.f) ? diff : -diff;
+
+	if (diff <= (paddleH / 2.f) && (mBallPos.x <= 25.f && mBallPos.x >= 20.f) && mBallVel.x < 0.f)
+	{
+		mBallVel.x *= -1.f;
+	}
+
+	// Top wall collision
+	if (mBallPos.y <= thickness && mBallVel.y < 0.f)
+	{
+		mBallVel.y *= -1;
+	}
+
+	// Bottom wall collision
+	else if (mBallPos.y >= (768 - thickness) && mBallVel.y > 0.f)
+	{
+		mBallVel.y *= -1;
+	}
+	else if (mBallPos.x >= (1024 - thickness) && mBallVel.x > 0.f)
+	{
+		mBallVel.x *= -1;
+	}
+
+	
 }
 
 void Game::GenerateOutput()
@@ -110,8 +184,8 @@ void Game::GenerateOutput()
 
 	// ball
 	SDL_FRect ball = {
-		static_cast<int>(mBallPos.x - thickness / 2),
-		static_cast<int>(mBallPos.y - thickness / 2),
+		mBallPos.x - thickness / 2.f,
+		mBallPos.y - thickness / 2.f,
 		thickness,
 		thickness
 	};
@@ -119,8 +193,8 @@ void Game::GenerateOutput()
 
 	// paddle
 	SDL_FRect paddle = {
-		static_cast<int>(mPaddlePos.x),
-		static_cast<int>(mPaddlePos.y - paddleH / 2),
+		mPaddlePos.x,
+		mPaddlePos.y - paddleH / 2.f,
 		thickness,
 		paddleH
 	};

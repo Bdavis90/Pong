@@ -1,5 +1,5 @@
 #include "Game.h"
-
+#include <iostream>
 int main()
 {
 	Game game;
@@ -13,5 +13,6 @@ int main()
 
 	game.Shutdown();
 
+	std::cout << __cplusplus;
 	return 0;
 }
