@@ -1,7 +1,10 @@
 #include "Game.h"
 #include "SDL3/SDL_video.h"
 
-Game::Game() : mWindow(nullptr), mIsRunning(true)
+const int thickness = 15;
+const float paddleH = 100.f;
+
+Game::Game() : mWindow(nullptr), mRenderer(nullptr), mIsRunning(true), mPaddlePos()
 {
 }
 
@@ -24,6 +27,18 @@ bool Game::Initilize()
 		return false;
 	}
 
+	mRenderer = SDL_CreateRenderer(mWindow, NULL);
+	if (!mRenderer)
+	{
+		SDL_Log("Failed to created renderer: %s", SDL_GetError());
+		return false;
+	}
+
+	mPaddlePos.x = 10.f;
+	mPaddlePos.y = 768.f / 2.f;
+	mBallPos.x = 1024.f / 2.f;
+	mBallPos.y = 768.f / 2.f;
+
 	return true;
 }
 
@@ -40,6 +55,7 @@ void Game::RunLoop()
 void Game::Shutdown()
 {
 	SDL_DestroyWindow(mWindow);
+	SDL_DestroyRenderer(mRenderer);
 	SDL_Quit();
 }
 
@@ -70,4 +86,45 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
+
+	SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255);
+	SDL_RenderClear(mRenderer);
+
+	// Draw walls
+	// top wall
+
+	SDL_FRect wall = { 0, 0, 1024, thickness };
+	SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
+	SDL_RenderFillRect(mRenderer, &wall);
+
+	// bottom wall
+	wall.y = 768 - thickness;
+	SDL_RenderFillRect(mRenderer, &wall);
+
+	// right wall
+	wall.x = 1024 - thickness;
+	wall.y = 0;
+	wall.w = thickness;
+	wall.h = 1024;
+	SDL_RenderFillRect(mRenderer, &wall);
+
+	// ball
+	SDL_FRect ball = {
+		static_cast<int>(mBallPos.x - thickness / 2),
+		static_cast<int>(mBallPos.y - thickness / 2),
+		thickness,
+		thickness
+	};
+	SDL_RenderFillRect(mRenderer, &ball);
+
+	// paddle
+	SDL_FRect paddle = {
+		static_cast<int>(mPaddlePos.x),
+		static_cast<int>(mPaddlePos.y - paddleH / 2),
+		thickness,
+		paddleH
+	};
+	SDL_RenderFillRect(mRenderer, &paddle);
+
+	SDL_RenderPresent(mRenderer);
 }
