@@ -13,6 +13,5 @@ int main()
 
 	game.Shutdown();
 
-	std::cout << __cplusplus;
 	return 0;
 }

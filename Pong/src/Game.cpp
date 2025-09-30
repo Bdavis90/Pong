@@ -69,9 +69,9 @@ void Game::ProcessInput()
 	{
 		switch (event.type)
 		{
-			case SDL_EVENT_QUIT:
-				mIsRunning = false;
-				break;
+		case SDL_EVENT_QUIT:
+			mIsRunning = false;
+			break;
 		}
 	}
 
@@ -144,18 +144,25 @@ void Game::UpdateGame()
 	{
 		mBallVel.y *= -1;
 	}
-
 	// Bottom wall collision
 	else if (mBallPos.y >= (768 - thickness) && mBallVel.y > 0.f)
 	{
 		mBallVel.y *= -1;
 	}
+	// right wall collision
 	else if (mBallPos.x >= (1024 - thickness) && mBallVel.x > 0.f)
 	{
 		mBallVel.x *= -1;
 	}
+	else if (mBallPos.x <= -100)
+	{
+		mBallPos.x = 1024.f / 2.f;
+		mBallPos.y = 768.f / 2.f;
+		mBallVel.x = -200.f;
+		mBallVel.y = 235.f;
+	}
 
-	
+
 }
 
 void Game::GenerateOutput()
